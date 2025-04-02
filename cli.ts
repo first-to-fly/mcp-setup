@@ -10,9 +10,6 @@
  * - Installing dependencies and building components
  * - Installing browser dependencies
  * - Generating configuration files
- *
- * @author AgentDeskAI
- * @license MIT
  */
 
 // Core Node.js imports
