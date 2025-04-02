@@ -1,0 +1,4 @@
+.browsers/
+.codebase/
+.roo/mcp.json
+node_modules/

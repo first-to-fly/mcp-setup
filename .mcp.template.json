@@ -1,0 +1,65 @@
+{
+  "mcpServers": {
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "--yes",
+        "@modelcontextprotocol/server-sequential-thinking@latest"
+      ],
+      "env": {},
+      "alwaysAllow": ["sequentialthinking"]
+    },
+    "fetch": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["--yes", "@kazuph/mcp-fetch@latest"],
+      "env": {},
+      "alwaysAllow": ["fetch"]
+    },
+    "browser-tools": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "__PWD__/submodules/browser-tools-mcp/browser-tools-mcp/dist/mcp-server.js"
+      ],
+      "env": {},
+      "alwaysAllow": [
+        "getConsoleLogs",
+        "getConsoleErrors",
+        "getNetworkErrors",
+        "getNetworkLogs",
+        "takeScreenshot",
+        "getSelectedElement"
+      ]
+    },
+    "browser-use": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "--directory",
+        "__PWD__/submodules/browser-use-mcp",
+        "run",
+        "src/main.py"
+      ],
+      "env": {
+        "ANONYMIZED_TELEMETRY": "false",
+        "CHROME_PATH": "__CHROME_PATH__",
+        "GOOGLE_API_KEY": "__BROWSER_USE_GOOGLE_API_KEY__",
+        "LOG_FOLDER_PATH": "__PWD__/.browser-use"
+      },
+      "alwaysAllow": ["Run Browser Task"]
+    },
+    "codebase": {
+      "type": "stdio",
+      "timeout": 300,
+      "command": "bun",
+      "args": ["--cwd", "__PWD__/submodules/codebase-mcp", "src/index.ts"],
+      "env": {
+        "CODEBASE_PATH": "__PWD__",
+        "GOOGLE_API_KEY": "__CODEBASE_GOOGLE_API_KEY__"
+      },
+      "alwaysAllow": ["Ask Codebase"]
+    }
+  }
+}
