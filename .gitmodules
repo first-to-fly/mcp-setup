@@ -1,5 +1,0 @@
-[submodule "submodules/browser-tools-mcp"]
-	path = submodules/browser-tools-mcp
-	url = git@github.com:AgentDeskAI/browser-tools-mcp.git
-	branch = main
-	ignore = dirty
