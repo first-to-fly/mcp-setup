@@ -3,3 +3,4 @@
 .roo/mcp.json
 node_modules/
 dist/
+.browser-use/

@@ -36,16 +36,6 @@ const REPOS = [
     name: "browser-tools-mcp",
     path: "submodules/browser-tools-mcp",
   },
-  {
-    url: "git@github.com:inkr-global/browser-use-mcp.git",
-    name: "browser-use-mcp",
-    path: "submodules/browser-use-mcp",
-  },
-  {
-    url: "git@github.com:inkr-global/codebase-mcp.git",
-    name: "codebase-mcp",
-    path: "submodules/codebase-mcp",
-  },
 ];
 
 /**
@@ -256,7 +246,12 @@ async function cloneRepositories(submodulesDir: string): Promise<void> {
  */
 async function updateGitignore(projectDir: string): Promise<void> {
   const gitignorePath = path.join(projectDir, ".gitignore");
-  const entriesToAdd = [".browsers/", ".codebase/", ".roo/mcp.json"];
+  const entriesToAdd = [
+    ".browsers/",
+    ".browser-use/",
+    ".codebase/",
+    ".roo/mcp.json",
+  ];
   let content = "";
 
   try {
@@ -366,30 +361,6 @@ async function setupSubmodules(submodulesDir: string): Promise<void> {
       log(green("npm run build completed successfully."));
     } catch (error: any) {
       log(red(`Error setting up browser-tools-server:`));
-      log(red(error.stderr || error.message));
-      throw error;
-    }
-  }
-
-  // Setup codebase-mcp
-  const codebaseMcpDir = path.join(submodulesDir, "codebase-mcp");
-  if (!(await fs.pathExists(codebaseMcpDir))) {
-    log(
-      yellow(
-        `Directory not found: ${codebaseMcpDir}. Skipping setup. (Did git clone/submodule update run correctly?)`
-      )
-    );
-  } else {
-    log(cyan(`Setting up codebase-mcp in ${codebaseMcpDir}...`));
-    try {
-      log(cyan(`Running 'bun install' in ${codebaseMcpDir}...`));
-      await execa("bun", ["install"], {
-        cwd: codebaseMcpDir,
-        stdio: "inherit",
-      });
-      log(green("bun install completed successfully."));
-    } catch (error: any) {
-      log(red(`Error setting up codebase-mcp:`));
       log(red(error.stderr || error.message));
       throw error;
     }
@@ -698,15 +669,7 @@ async function main(): Promise<void> {
     );
 
     log(yellow("\n--- Important Next Steps for Browser Tools ---"));
-    log(yellow("1. Run the Browser Tools Server:"));
-    log(yellow("   - Open a NEW terminal window."));
-    log(
-      yellow(
-        "   - Start the server with this single command (keep this terminal open):"
-      )
-    );
-    log(cyan(`     node "${browserConnectorPath}"`));
-    log(yellow("2. Install the Chrome Extension:"));
+    log(yellow("1. Install the Chrome Extension:"));
     log(yellow("   - Open Chrome/Chromium and go to: chrome://extensions/"));
     log(
       yellow(

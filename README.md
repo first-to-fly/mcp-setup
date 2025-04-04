@@ -8,7 +8,6 @@ A streamlined CLI tool to automate the setup of MCP (Multi-Component Platform) s
 
 ## Features
 
-- ✅ Automatic repository management (via Git submodules or direct cloning)
 - ✅ Dependency installation and build process automation
 - ✅ Playwright Chromium browser installation
 - ✅ Configuration file generation
@@ -48,32 +47,17 @@ When you run this tool, it performs the following actions:
 
 1. **Prerequisites Check** - Verifies all required tools are installed
 2. **Directory Setup** - Creates necessary directories
-3. **Repository Setup** - Either:
-   - Adds repositories as Git submodules (if in a Git repository)
-   - Clones repositories directly (if not in a Git repository)
-4. **Dependency Installation** - Installs and builds all required dependencies
-5. **Browser Setup** - Installs Playwright Chromium
-6. **Configuration** - Generates the `.roo/mcp.json` configuration file
+3. **Dependency Installation** - Installs and builds all required dependencies
+4. **Browser Setup** - Installs Playwright Chromium
+5. **Configuration** - Generates the `.roo/mcp.json` configuration file
 
 After setup is complete, the tool provides instructions for running the Browser Tools Server and installing the Chrome extension.
-
-## Repositories
-
-The tool sets up the following repositories:
-
-- [browser-tools-mcp](https://github.com/AgentDeskAI/browser-tools-mcp)
-- [browser-use-mcp](https://github.com/inkr-global/browser-use-mcp)
-- [codebase-mcp](https://github.com/inkr-global/codebase-mcp)
 
 ## Requirements
 
 - **API Key**: You'll need a Google Gemini API key, which you can obtain from [Google AI Studio](https://aistudio.google.com/)
 
 ## Troubleshooting
-
-### Git Submodule Issues
-
-If you encounter issues with Git submodules, the tool will automatically fall back to direct cloning. This ensures the setup process can continue even if there are issues with your Git repository configuration.
 
 ### Browser Installation
 
