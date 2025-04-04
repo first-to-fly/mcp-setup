@@ -19,9 +19,10 @@
     },
     "browser-tools": {
       "type": "stdio",
-      "command": "node",
+      "command": "npx",
       "args": [
-        "__PWD__/submodules/browser-tools-mcp/browser-tools-mcp/dist/mcp-server.js"
+        "--yes",
+        "@inkr/browser-tools-mcp@latest"
       ],
       "env": {},
       "alwaysAllow": [
@@ -35,12 +36,11 @@
     },
     "browser-use": {
       "type": "stdio",
-      "command": "uv",
+      "timeout": 300,
+      "command": "npx",
       "args": [
-        "--directory",
-        "__PWD__/submodules/browser-use-mcp",
-        "run",
-        "src/main.py"
+        "--yes",
+        "@inkr/browser-use-mcp@latest"
       ],
       "env": {
         "ANONYMIZED_TELEMETRY": "false",
@@ -48,18 +48,21 @@
         "GOOGLE_API_KEY": "__BROWSER_USE_GOOGLE_API_KEY__",
         "LOG_FOLDER_PATH": "__PWD__/.browser-use"
       },
-      "alwaysAllow": ["Run Browser Task"]
+      "alwaysAllow": ["run_browser_task"]
     },
     "codebase": {
       "type": "stdio",
       "timeout": 300,
-      "command": "bun",
-      "args": ["--cwd", "__PWD__/submodules/codebase-mcp", "src/index.ts"],
+      "command": "npx",
+      "args": [
+        "--yes",
+        "@inkr/codebase-mcp@latest"
+      ],
       "env": {
         "CODEBASE_PATH": "__PWD__",
         "GOOGLE_API_KEY": "__CODEBASE_GOOGLE_API_KEY__"
       },
-      "alwaysAllow": ["Ask Codebase"]
+      "alwaysAllow": ["ask_codebase"]
     }
   }
 }

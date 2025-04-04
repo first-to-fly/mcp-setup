@@ -28,27 +28,6 @@ const { log } = console;
 const { green, red, yellow, cyan } = chalk;
 
 /**
- * Repository configuration for required MCP components
- */
-const REPOS = [
-  {
-    url: "git@github.com:AgentDeskAI/browser-tools-mcp.git",
-    name: "browser-tools-mcp",
-    path: "submodules/browser-tools-mcp",
-  },
-  {
-    url: "git@github.com:inkr-global/browser-use-mcp.git",
-    name: "browser-use-mcp",
-    path: "submodules/browser-use-mcp",
-  },
-  {
-    url: "git@github.com:inkr-global/codebase-mcp.git",
-    name: "codebase-mcp",
-    path: "submodules/codebase-mcp",
-  },
-];
-
-/**
  * Checks if a command exists in the system PATH.
  *
  * @param command - The command to check.
@@ -103,9 +82,8 @@ async function checkPrerequisites(): Promise<void> {
  * @param projectDir - The current project directory (cwd).
  * @returns The path to the submodules directory.
  */
-async function setupDirectories(projectDir: string): Promise<string> {
+async function setupDirectories(projectDir: string) {
   log(cyan("Setting up directories..."));
-  const submodulesDir: string = path.join(projectDir, "submodules");
   const rooDir: string = path.join(projectDir, ".roo");
 
   try {
@@ -117,136 +95,6 @@ async function setupDirectories(projectDir: string): Promise<string> {
     log(red(error));
     throw error;
   }
-  return submodulesDir;
-}
-
-/**
- * Adds the required MCP repositories as Git submodules.
- * If adding as submodules fails, falls back to direct cloning.
- *
- * @param projectDir - The root directory of the project (cwd).
- * @returns Boolean indicating if all submodules were added successfully.
- */
-async function addSubmodules(projectDir: string): Promise<boolean> {
-  log(cyan("Adding MCP repositories as submodules..."));
-
-  // First, validate if git submodules can be used in this repository
-  try {
-    // Check if repository is in a valid state for submodules
-    await execa("git", ["rev-parse", "--is-inside-work-tree"], {
-      cwd: projectDir,
-      stdio: "pipe",
-    });
-
-    // Touch .gitmodules file if it doesn't exist (prevents "not in working tree" error)
-    const gitModulesPath = path.join(projectDir, ".gitmodules");
-    if (!(await fs.pathExists(gitModulesPath))) {
-      log(yellow("Creating empty .gitmodules file..."));
-      await fs.writeFile(gitModulesPath, "");
-    }
-  } catch (error: any) {
-    log(yellow("Git repository is not in a valid state for submodules."));
-    log(yellow("Falling back to direct repository cloning..."));
-    return false;
-  }
-
-  // Track if all submodules were added successfully
-  let allSuccessful = true;
-
-  for (const repo of REPOS) {
-    const targetPath = path.join(projectDir, repo.path);
-    const gitModulesPath = path.join(projectDir, ".gitmodules");
-    let isSubmodule = false;
-
-    if (await fs.pathExists(gitModulesPath)) {
-      const gitModulesContent = await fs.readFile(gitModulesPath, "utf-8");
-      if (gitModulesContent.includes(`path = ${repo.path}`)) {
-        isSubmodule = true;
-      }
-    }
-
-    if ((await fs.pathExists(targetPath)) && isSubmodule) {
-      log(yellow(`Submodule ${repo.path} already exists. Skipping add.`));
-      continue;
-    } else if ((await fs.pathExists(targetPath)) && !isSubmodule) {
-      log(
-        yellow(
-          `Directory ${repo.path} already exists but is not registered as a submodule. Skipping add.`
-        )
-      );
-      continue;
-    }
-
-    log(`Adding submodule ${repo.url} at ${repo.path}...`);
-    try {
-      await execa("git", ["submodule", "add", repo.url, repo.path], {
-        cwd: projectDir,
-        stdio: "inherit",
-      });
-      log(green(`Successfully added submodule ${repo.path}.`));
-    } catch (error: any) {
-      log(red(`Error adding submodule ${repo.url}:`));
-      log(red(error.stderr || error.message));
-
-      // Mark as failed but continue with others
-      allSuccessful = false;
-
-      // Create parent directory if it doesn't exist
-      await fs.ensureDir(path.dirname(targetPath));
-
-      // Try direct clone as fallback for this repo
-      log(yellow(`Falling back to direct clone for ${repo.name}...`));
-      try {
-        await execa("git", ["clone", repo.url, targetPath]);
-        log(green(`Successfully cloned ${repo.name} into ${targetPath}.`));
-      } catch (cloneError: any) {
-        log(red(`Error cloning repository ${repo.url}:`));
-        log(red(cloneError.stderr || cloneError.message));
-        log(
-          yellow(
-            "Please ensure network connectivity and necessary permissions (e.g., SSH keys)."
-          )
-        );
-      }
-    }
-  }
-
-  return allSuccessful;
-}
-
-/**
- * Clones the required MCP repositories directly when not using submodules.
- *
- * @param submodulesDir - The target directory to clone into.
- * @throws Will throw an error if cloning fails.
- */
-async function cloneRepositories(submodulesDir: string): Promise<void> {
-  log(cyan("Cloning MCP repositories directly..."));
-  await fs.ensureDir(submodulesDir);
-
-  for (const repo of REPOS) {
-    const targetPath: string = path.join(submodulesDir, repo.name);
-
-    if (await fs.pathExists(targetPath)) {
-      log(yellow(`Directory ${targetPath} already exists. Skipping clone.`));
-      continue;
-    }
-
-    log(`Cloning ${repo.url} into ${targetPath}...`);
-    try {
-      await execa("git", ["clone", repo.url, targetPath]);
-      log(green(`Successfully cloned ${repo.name} into ${targetPath}.`));
-    } catch (error: any) {
-      log(red(`Error cloning repository ${repo.url}:`));
-      log(red(error.stderr || error.message));
-      log(
-        yellow(
-          "Please ensure Git is installed, network connectivity, and necessary permissions."
-        )
-      );
-      throw error;
-    }
-  }
 }
 
 /**
@@ -256,7 +104,12 @@ async function cloneRepositories(submodulesDir: string): Promise<void> {
  */
 async function updateGitignore(projectDir: string): Promise<void> {
   const gitignorePath = path.join(projectDir, ".gitignore");
-  const entriesToAdd = [".browsers/", ".codebase/", ".roo/mcp.json"];
+  const entriesToAdd = [
+    ".browsers/",
+    ".browser-use/",
+    ".codebase/",
+    ".roo/mcp.json",
+  ];
   let content = "";
 
   try {
@@ -290,112 +143,6 @@ async function updateGitignore(projectDir: string): Promise<void> {
     log(red(error.message));
     // Non-critical error, don't throw
   }
-}
-
-/**
- * Runs install and build steps for required submodules/cloned repos.
- *
- * @param submodulesDir - The root directory containing the submodules/cloned repos.
- * @throws Will throw an error if critical build steps fail.
- */
-async function setupSubmodules(submodulesDir: string): Promise<void> {
-  log(cyan("Setting up submodules/cloned repos (install/build)..."));
-
-  // Setup browser-tools-mcp
-  const browserToolsMcpDir = path.join(
-    submodulesDir,
-    "browser-tools-mcp",
-    "browser-tools-mcp"
-  );
-  if (!(await fs.pathExists(browserToolsMcpDir))) {
-    log(
-      yellow(
-        `Directory not found: ${browserToolsMcpDir}. Skipping setup. (Did git clone/submodule update run correctly?)`
-      )
-    );
-  } else {
-    log(cyan(`Setting up browser-tools-mcp in ${browserToolsMcpDir}...`));
-    try {
-      log(cyan(`Running 'npm install' in ${browserToolsMcpDir}...`));
-      await execa("npm", ["install"], {
-        cwd: browserToolsMcpDir,
-        stdio: "inherit",
-      });
-      log(green("npm install completed successfully."));
-
-      log(cyan(`Running 'npm run build' in ${browserToolsMcpDir}...`));
-      await execa("npm", ["run", "build"], {
-        cwd: browserToolsMcpDir,
-        stdio: "inherit",
-      });
-      log(green("npm run build completed successfully."));
-    } catch (error: any) {
-      log(red(`Error setting up browser-tools-mcp:`));
-      log(red(error.stderr || error.message));
-      throw error;
-    }
-  }
-
-  // Setup browser-tools-server
-  const browserToolsServerDir = path.join(
-    submodulesDir,
-    "browser-tools-mcp",
-    "browser-tools-server"
-  );
-  if (!(await fs.pathExists(browserToolsServerDir))) {
-    log(
-      yellow(
-        `Directory not found: ${browserToolsServerDir}. Skipping setup. (Did git clone/submodule update run correctly?)`
-      )
-    );
-  } else {
-    log(cyan(`Setting up browser-tools-server in ${browserToolsServerDir}...`));
-    try {
-      log(cyan(`Running 'npm install' in ${browserToolsServerDir}...`));
-      await execa("npm", ["install"], {
-        cwd: browserToolsServerDir,
-        stdio: "inherit",
-      });
-      log(green("npm install completed successfully."));
-
-      log(cyan(`Running 'npm run build' in ${browserToolsServerDir}...`));
-      await execa("npm", ["run", "build"], {
-        cwd: browserToolsServerDir,
-        stdio: "inherit",
-      });
-      log(green("npm run build completed successfully."));
-    } catch (error: any) {
-      log(red(`Error setting up browser-tools-server:`));
-      log(red(error.stderr || error.message));
-      throw error;
-    }
-  }
-
-  // Setup codebase-mcp
-  const codebaseMcpDir = path.join(submodulesDir, "codebase-mcp");
-  if (!(await fs.pathExists(codebaseMcpDir))) {
-    log(
-      yellow(
-        `Directory not found: ${codebaseMcpDir}. Skipping setup. (Did git clone/submodule update run correctly?)`
-      )
-    );
-  } else {
-    log(cyan(`Setting up codebase-mcp in ${codebaseMcpDir}...`));
-    try {
-      log(cyan(`Running 'bun install' in ${codebaseMcpDir}...`));
-      await execa("bun", ["install"], {
-        cwd: codebaseMcpDir,
-        stdio: "inherit",
-      });
-      log(green("bun install completed successfully."));
-    } catch (error: any) {
-      log(red(`Error setting up codebase-mcp:`));
-      log(red(error.stderr || error.message));
-      throw error;
-    }
-  }
-
-  log(green("Submodule/clone setup completed."));
 }
 
 /**
@@ -619,51 +366,8 @@ async function main(): Promise<void> {
 
   try {
     await checkPrerequisites();
-    const submodulesDir: string = await setupDirectories(projectDir);
+    await setupDirectories(projectDir);
 
-    // Check if the current directory is a Git repository
-    const gitDir = path.join(projectDir, ".git");
-    const isGitRepo = await fs.pathExists(gitDir);
-
-    let useSubmodules = false;
-    if (isGitRepo) {
-      log(
-        cyan("Git repository detected. Attempting setup using submodules...")
-      );
-      useSubmodules = await addSubmodules(projectDir);
-
-      if (useSubmodules) {
-        try {
-          // Initialize and update submodules
-          log(cyan("Initializing and updating submodules..."));
-          await execa("git", ["submodule", "update", "--init", "--recursive"], {
-            cwd: projectDir,
-            stdio: "inherit",
-          });
-          log(green("Submodules initialized and updated."));
-
-          // Update .gitignore
-          log(cyan("Updating .gitignore..."));
-          await updateGitignore(projectDir);
-        } catch (submoduleError: any) {
-          log(
-            yellow(
-              "Error initializing submodules, falling back to direct cloning..."
-            )
-          );
-          useSubmodules = false;
-        }
-      }
-    }
-
-    // If submodules failed or not a git repo, use direct cloning
-    if (!useSubmodules) {
-      log(yellow("Setting up using git clone..."));
-      await cloneRepositories(submodulesDir);
-    }
-
-    // Setup repositories regardless of how they were obtained
-    await setupSubmodules(submodulesDir);
 
     const chromePath: string = await installPlaywrightChromium(projectDir);
     const geminiApiKey: string = await getGeminiApiKey();
@@ -681,32 +385,14 @@ async function main(): Promise<void> {
     );
 
     // Display next steps
-    const browserToolsServerDir = path.join(
-      projectDir,
-      "submodules",
-      "browser-tools-mcp",
-      "browser-tools-server"
-    );
-    const chromeExtensionDir = path.join(
-      browserToolsServerDir,
-      "chrome-extension"
-    );
-    const browserConnectorPath = path.join(
-      browserToolsServerDir,
-      "dist",
-      "browser-connector.js"
-    );
+    const { stdout: chromeExtensionDir } = await execa("npx", [
+      "--yes",
+      "@inkr/browser-tools-mcp@latest",
+      "chrome-extension-path",
+    ]);
 
     log(yellow("\n--- Important Next Steps for Browser Tools ---"));
-    log(yellow("1. Run the Browser Tools Server:"));
-    log(yellow("   - Open a NEW terminal window."));
-    log(
-      yellow(
-        "   - Start the server with this single command (keep this terminal open):"
-      )
-    );
-    log(cyan(`     node "${browserConnectorPath}"`));
-    log(yellow("2. Install the Chrome Extension:"));
+    log(yellow("1. Install the Chrome Extension:"));
     log(yellow("   - Open Chrome/Chromium and go to: chrome://extensions/"));
     log(
       yellow(
