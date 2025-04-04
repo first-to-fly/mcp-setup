@@ -26,6 +26,12 @@ jobs:
     - name: Build package
       run: bun run build
 
+    - name: Copy package.json to dist
+      run: cp package.json ./dist/
+
+    - name: Copy README.md to dist
+      run: cp README.md ./dist/
+
     - name: Setup Node.js for npm publish
       uses: actions/setup-node@v4
       with:
