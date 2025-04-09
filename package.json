@@ -1,6 +1,6 @@
 {
   "name": "@first-to-fly/mcp-setup",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A script to automate MCP server setup",
   "main": "cli.ts",
   "bin": {
