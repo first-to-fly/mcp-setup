@@ -368,7 +368,6 @@ async function main(): Promise<void> {
     await checkPrerequisites();
     await setupDirectories(projectDir);
 
-
     const chromePath: string = await installPlaywrightChromium(projectDir);
     const geminiApiKey: string = await getGeminiApiKey();
     await generateMcpJson(projectDir, chromePath, geminiApiKey);

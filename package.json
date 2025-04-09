@@ -2,12 +2,11 @@
   "name": "@first-to-fly/mcp-setup",
   "version": "1.0.2",
   "description": "A script to automate MCP server setup",
-  "main": "cli.ts",
+  "main": "./run",
   "bin": {
-    "mcp-setup": "./cli.ts"
+    "mcp-setup": "./run"
   },
   "scripts": {
-    "build": "bun build.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
