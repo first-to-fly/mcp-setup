@@ -3,7 +3,7 @@ name: Publish Package to npm
 on:
   push:
     tags:
-    - 'v*.*.*' # Trigger on tags like v1.0.0, v1.2.3 etc.
+    - 'v*.*.*' # Trigger on tags like v1.0.0, v1.2.3, etc.
 
 jobs:
   publish-npm:
@@ -18,7 +18,7 @@ jobs:
     - name: Setup Bun
       uses: oven-sh/setup-bun@v1
       with:
-        bun-version: latest # Or specify a version
+        bun-version: latest # Or specify a version like '1.x'
 
     - name: Install dependencies
       run: bun install --frozen-lockfile
@@ -26,21 +26,11 @@ jobs:
     - name: Build package
       run: bun run build
 
-    - name: Copy package.json to dist
-      run: cp package.json ./dist/
-
-    - name: Copy README.md to dist
-      run: cp README.md ./dist/
-
-    - name: Copy MCP Template to dist/
-      run: cp .mcp.template.json ./dist/
-
     - name: Setup Node.js for npm publish
       uses: actions/setup-node@v4
       with:
         node-version: '20.x' # Use a specific LTS version
         registry-url: 'https://registry.npmjs.org/'
-        # scope: '@first-to-fly' # Optional: Define scope if needed for .npmrc
 
     - name: Publish to npm
       working-directory: ./dist # Run npm publish from the build output directory
