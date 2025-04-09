@@ -32,6 +32,9 @@ jobs:
     - name: Copy README.md to dist
       run: cp README.md ./dist/
 
+    - name: Copy MCP Template to dist/
+      run: cp .mcp.template.json ./dist/
+
     - name: Setup Node.js for npm publish
       uses: actions/setup-node@v4
       with:
